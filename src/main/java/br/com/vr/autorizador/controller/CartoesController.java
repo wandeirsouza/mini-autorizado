@@ -26,7 +26,7 @@ public class CartoesController {
     }
 
     @GetMapping(value = "/{numeroCartcao}")
-    public ResponseEntity<Object> updateBook(@PathVariable(value = "numeroCartcao") String numeroCartao) {
+    public ResponseEntity<Object> updateCartao(@PathVariable(value = "numeroCartcao") String numeroCartao) {
         Optional<Cartao> cartao = cartaoService.findByNumeroCartao(numeroCartao);
         return cartao.<ResponseEntity<Object>>map(value -> ResponseEntity.status(HttpStatus.OK)
                 .body(value.getSaldo())).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
