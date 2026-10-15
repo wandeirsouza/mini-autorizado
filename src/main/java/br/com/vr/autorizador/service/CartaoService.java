@@ -3,6 +3,7 @@ package br.com.vr.autorizador.service;
 import br.com.vr.autorizador.repositories.CartaoRepository;
 import br.com.vr.autorizador.dtos.CartaoDTO;
 import br.com.vr.autorizador.models.Cartao;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,7 @@ public class CartaoService {
         cartaoRepository.delete(cartao);
     }
 
+    @Transactional(rollbackOn = Exception.class)
     public Optional<Cartao> findByNumeroCartao(String numeroCartao){
         return cartaoRepository.findByNumeroCartao(numeroCartao);
     }

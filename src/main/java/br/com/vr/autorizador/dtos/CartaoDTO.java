@@ -2,16 +2,15 @@ package br.com.vr.autorizador.dtos;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 public record CartaoDTO (
         @NotBlank
-        @Min(16)
-        @Max(16)
+        @Size(max = 16)
         String numeroCartao,
 
         @NotBlank
-        @Min(4)
-        @Max(4)
+        @Size(max = 4)
         String senha
 ) {
 
