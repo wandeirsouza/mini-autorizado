@@ -1,6 +1,6 @@
 package br.com.vr.autorizador.service;
 
-import br.com.vr.autorizador.CartaoRepository;
+import br.com.vr.autorizador.repositories.CartaoRepository;
 import br.com.vr.autorizador.dtos.CartaoDTO;
 import br.com.vr.autorizador.models.Cartao;
 import lombok.AllArgsConstructor;
@@ -28,8 +28,7 @@ public class CartaoService {
         return cartaoDTO;
     }
 
-    public Cartao update(Cartao cartao, CartaoDTO cartaoDTO) {
-        BeanUtils.copyProperties(cartaoDTO, cartao);
+    public Cartao update(Cartao cartao) {
         return cartaoRepository.save(cartao);
     }
 
@@ -39,6 +38,10 @@ public class CartaoService {
 
     public Optional<Cartao> findByNumeroCartao(String numeroCartao){
         return cartaoRepository.findByNumeroCartao(numeroCartao);
+    }
+
+    public Optional<Cartao> findByNumeroCartaoAndSenha(String numeroCartao, String senha){
+        return cartaoRepository.findByNumeroCartaoAndSenha(numeroCartao, senha);
     }
 
 }
