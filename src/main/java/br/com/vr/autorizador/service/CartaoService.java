@@ -6,6 +6,7 @@ import br.com.vr.autorizador.models.Cartao;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -17,6 +18,8 @@ public class CartaoService {
 
     private final CartaoRepository cartaoRepository;
 
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+
     public Optional<Cartao> findById(UUID id) {
         return cartaoRepository.findById(id);
     }
@@ -25,6 +28,7 @@ public class CartaoService {
         var cartao = new Cartao();
         cartao.setSaldo(500.0);
         BeanUtils.copyProperties(cartaoDTO, cartao);
+        cartao.setSenha(bCryptPasswordEncoder.encode(cartaoDTO.senha()));
         cartaoRepository.save(cartao);
         return cartaoDTO;
     }
@@ -43,7 +47,7 @@ public class CartaoService {
     }
 
     public Optional<Cartao> findByNumeroCartaoAndSenha(String numeroCartao, String senha){
-        return cartaoRepository.findByNumeroCartaoAndSenha(numeroCartao, senha);
+        return cartaoRepository.findByNumeroCartaoAndSenha(numeroCartao, bCryptPasswordEncoder.encode(senha));
     }
 
 }

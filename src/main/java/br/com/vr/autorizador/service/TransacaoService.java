@@ -1,6 +1,5 @@
 package br.com.vr.autorizador.service;
 
-import br.com.vr.autorizador.dtos.CartaoDTO;
 import br.com.vr.autorizador.dtos.TransacaoDTO;
 import br.com.vr.autorizador.models.Cartao;
 import br.com.vr.autorizador.models.Transacao;
@@ -8,7 +7,7 @@ import br.com.vr.autorizador.repositories.CartaoRepository;
 import br.com.vr.autorizador.repositories.TransacaoRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.BeanUtils;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -22,20 +21,49 @@ public class TransacaoService {
 
     private final TransacaoRepository transacaoRepository;
 
-    public Optional<Cartao> findById(UUID id) {
-        return cartaoRepository.findById(id);
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+
+    public Optional<Transacao> findById(UUID id) {
+        return transacaoRepository.findById(id);
     }
 
-    @Transactional(rollbackOn = Exception.class)
+    @Transactional
     public TransacaoDTO save(TransacaoDTO transacaoDTO) {
-        Optional<Cartao> cartao  = cartaoRepository.findByNumeroCartao(transacaoDTO.numeroCartao());
-        Cartao cartaoRetornado = cartao.get();
-        cartaoRetornado.setSaldo(cartaoRetornado.getSaldo()-transacaoDTO.valor());
+        Optional.ofNullable(transacaoDTO.valor())
+                .filter(valor -> valor > 0)
+                .orElseThrow(() -> new TransacaoNegadaException("VALOR_INVALIDO"));
+
+        Cartao cartaoRetornado = cartaoRepository.findByNumeroCartao(transacaoDTO.numeroCartao())
+                .orElseThrow(() -> new TransacaoNegadaException("CARTAO_INEXISTENTE"));
+
+        Optional.of(cartaoRetornado)
+                .filter(cartao ->  bCryptPasswordEncoder.matches(transacaoDTO.senhaCartao(), cartao.getSenha()))
+                .orElseThrow(() -> new TransacaoNegadaException("SENHA_INVALIDA"));
+
+        Optional.of(cartaoRetornado)
+                .filter(cartao -> cartao.getSaldo() >= transacaoDTO.valor())
+                .orElseThrow(() -> new TransacaoNegadaException("SALDO_INSUFICIENTE"));
+
+        cartaoRetornado.setSaldo(cartaoRetornado.getSaldo() - transacaoDTO.valor());
         cartaoRepository.save(cartaoRetornado);
         var transacao = new Transacao();
-        BeanUtils.copyProperties(transacaoDTO, transacao);
+        transacao.setNumeroCartao(transacaoDTO.numeroCartao());
+        transacao.setValor(transacaoDTO.valor());
         transacaoRepository.save(transacao);
         return transacaoDTO;
+    }
+
+    public static class TransacaoNegadaException extends RuntimeException {
+        private final String codigo;
+
+        public TransacaoNegadaException(String codigo) {
+            super(codigo);
+            this.codigo = codigo;
+        }
+
+        public String getCodigo() {
+            return codigo;
+        }
     }
 
     public void delete(Transacao transacao) {

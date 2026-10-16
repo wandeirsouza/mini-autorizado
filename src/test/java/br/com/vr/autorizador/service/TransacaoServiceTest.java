@@ -42,6 +42,7 @@ class TransacaoServiceTest {
         TransacaoDTO dto = new TransacaoDTO(NUMERO_CARTAO, SENHA, 125.0);
         Cartao cartao = new Cartao();
         cartao.setNumeroCartao(NUMERO_CARTAO);
+        cartao.setSenha(SENHA);
         cartao.setSaldo(500.0);
         when(cartaoRepository.findByNumeroCartao(NUMERO_CARTAO)).thenReturn(Optional.of(cartao));
 
@@ -55,6 +56,54 @@ class TransacaoServiceTest {
         verify(transacaoRepository).save(transacaoCaptor.capture());
         assertEquals(NUMERO_CARTAO, transacaoCaptor.getValue().getNumeroCartao());
         assertEquals(125.0, transacaoCaptor.getValue().getValor());
+    }
+
+    @Test
+    void saveRejeitaCartaoInexistenteSemPersistir() {
+        TransacaoDTO dto = new TransacaoDTO(NUMERO_CARTAO, SENHA, 125.0);
+        when(cartaoRepository.findByNumeroCartao(NUMERO_CARTAO)).thenReturn(Optional.empty());
+
+        var exception = assertThrows(TransacaoService.TransacaoNegadaException.class, () -> service.save(dto));
+
+        assertEquals("CARTAO_INEXISTENTE", exception.getCodigo());
+        verify(cartaoRepository, never()).save(any());
+        verifyNoInteractions(transacaoRepository);
+    }
+
+    @Test
+    void saveRejeitaSenhaInvalidaSemDebitarOuPersistir() {
+        TransacaoDTO dto = new TransacaoDTO(NUMERO_CARTAO, "9999", 125.0);
+        Cartao cartao = cartaoComSaldo(500.0);
+        when(cartaoRepository.findByNumeroCartao(NUMERO_CARTAO)).thenReturn(Optional.of(cartao));
+
+        var exception = assertThrows(TransacaoService.TransacaoNegadaException.class, () -> service.save(dto));
+
+        assertEquals("SENHA_INVALIDA", exception.getCodigo());
+        assertEquals(500.0, cartao.getSaldo());
+        verify(cartaoRepository, never()).save(any());
+        verifyNoInteractions(transacaoRepository);
+    }
+
+    @Test
+    void saveRejeitaSaldoInsuficienteIncluindoCompraQueZeraSaldo() {
+        TransacaoDTO dto = new TransacaoDTO(NUMERO_CARTAO, SENHA, 500.0);
+        Cartao cartao = cartaoComSaldo(500.0);
+        when(cartaoRepository.findByNumeroCartao(NUMERO_CARTAO)).thenReturn(Optional.of(cartao));
+
+        var exception = assertThrows(TransacaoService.TransacaoNegadaException.class, () -> service.save(dto));
+
+        assertEquals("SALDO_INSUFICIENTE", exception.getCodigo());
+        assertEquals(500.0, cartao.getSaldo());
+        verify(cartaoRepository, never()).save(any());
+        verifyNoInteractions(transacaoRepository);
+    }
+
+    private Cartao cartaoComSaldo(double saldo) {
+        Cartao cartao = new Cartao();
+        cartao.setNumeroCartao(NUMERO_CARTAO);
+        cartao.setSenha(SENHA);
+        cartao.setSaldo(saldo);
+        return cartao;
     }
 
     @Test
