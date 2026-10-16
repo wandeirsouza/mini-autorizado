@@ -33,7 +33,12 @@ Os controllers traduzem requisições para respostas HTTP; os serviços executam
 
 ## Funcionalidades e endpoints
 
-Todos os endpoints exigem autenticação HTTP Basic.
+Todos os endpoints exigem autenticação HTTP Basic. Para o ambiente local, use:
+
+- **Usuário:** `username`
+- **Senha:** `password`
+
+Por exemplo, com `curl`: `curl -u username:password http://localhost:8080/cartoes/1234567890123456`.
 
 ### Cartões
 
@@ -108,6 +113,6 @@ Os testes unitários usam Mockito para substituir dependências dos controllers 
 
 - `CartoesControllerTest` cobre criação com número novo, rejeição de número já cadastrado e consulta de saldo. Esses testes usam Mockito e não precisam conectar ao MySQL.
 - `ddl-auto: create` recria as tabelas na inicialização. Para ambientes que precisam preservar dados, use migrações de banco e uma estratégia como `validate`.
-- A autenticação usa um usuário em memória de demonstração. O PIN do cartão é armazenado com BCrypt, mas credenciais fixas de autenticação não são adequadas para produção.
+- A autenticação HTTP Basic usa o usuário em memória `username` e a senha `password` para desenvolvimento local. O PIN do cartão é armazenado com BCrypt; credenciais fixas de autenticação não são adequadas para produção.
 - O auditing JPA do Spring Data está habilitado na aplicação e nas entidades `Cartao` e `Transacao`, permitindo preencher `createdAt` com `@CreatedDate`.
 - Os valores monetários são representados como `BigDecimal` para evitar erros de precisão de ponto flutuante.
