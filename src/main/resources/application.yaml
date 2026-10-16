@@ -2,14 +2,15 @@ spring:
   application:
     name: autorizador
   datasource:
-    url: jdbc:postgresql://aws-1-us-west-2.pooler.supabase.com:5432/postgres
-    username: postgres.isrgbkfaokcupfmynwyk
-    password: QywwljerISHoDdST
-    driver-class-name: org.postgresql.Driver
+    url: jdbc:mysql://localhost:3306/miniautorizador?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: root
+    password:
+    driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+        dialect: org.hibernate.dialect.MySQL5Dialect
+
