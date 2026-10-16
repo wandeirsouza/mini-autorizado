@@ -98,7 +98,7 @@ Executar os testes:
 ./mvnw.cmd test
 ```
 
-O teste de contexto carrega a aplicação completa (`@SpringBootTest`), portanto precisa de um datasource acessível ou de uma configuração de teste isolada. O arquivo de configuração atual usa `ddl-auto: create`, que recria as tabelas ao iniciar; a associação `transacao.cartao_id` é criada pelo Hibernate.
+O teste de contexto carrega a aplicação completa (`@SpringBootTest`), portanto precisa de um datasource acessível ou de uma configuração de teste isolada. A configuração usa `ddl-auto: update`: o Hibernate atualiza o esquema conforme as entidades sem recriar as tabelas a cada inicialização. Para produção, prefira versionar alterações de esquema com uma ferramenta de migração, como Flyway ou Liquibase.
 
 ## Testes
 
@@ -112,7 +112,8 @@ Os testes unitários usam Mockito para substituir dependências dos controllers 
 ## Observações conhecidas
 
 - `CartoesControllerTest` cobre criação com número novo, rejeição de número já cadastrado e consulta de saldo. Esses testes usam Mockito e não precisam conectar ao MySQL.
-- `ddl-auto: create` recria as tabelas na inicialização. Para ambientes que precisam preservar dados, use migrações de banco e uma estratégia como `validate`.
+- `ddl-auto: update` mantém os dados ao iniciar e ajusta o esquema às entidades; não substitui migrações versionadas para produção.
+- A autorização de transações usa `@Transactional` no serviço e `@Lock(LockModeType.PESSIMISTIC_WRITE)` na busca do cartão. O banco bloqueia a linha do cartão até o fim da transação, fazendo com que operações simultâneas sobre o mesmo cartão aguardem e leiam o saldo atualizado. Cartões diferentes podem ser processados em paralelo.
 - A autenticação HTTP Basic usa o usuário em memória `username` e a senha `password` para desenvolvimento local. O PIN do cartão é armazenado com BCrypt; credenciais fixas de autenticação não são adequadas para produção.
 - O auditing JPA do Spring Data está habilitado na aplicação e nas entidades `Cartao` e `Transacao`, permitindo preencher `createdAt` com `@CreatedDate`.
 - Os valores monetários são representados como `BigDecimal` para evitar erros de precisão de ponto flutuante.
