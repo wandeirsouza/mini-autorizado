@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.*;
 
@@ -35,10 +36,23 @@ class CartoesControllerTest {
     }
 
     @Test
-    void saveCartaoQuandoCartaoExistenteRetornaCreatedEDtoSalvo() {
+    void saveCartaoQuandoNumeroJaExisteRetornaUnprocessableContent() {
         CartaoDTO dto = new CartaoDTO(NUMERO_CARTAO, SENHA);
         Cartao cartaoExistente = new Cartao();
         when(cartaoService.findByNumeroCartao(NUMERO_CARTAO)).thenReturn(Optional.of(cartaoExistente));
+
+        ResponseEntity<CartaoDTO> response = controller.saveCartao(dto);
+
+        assertEquals(HttpStatus.UNPROCESSABLE_CONTENT, response.getStatusCode());
+        assertSame(dto, response.getBody());
+        verify(cartaoService).findByNumeroCartao(NUMERO_CARTAO);
+        verify(cartaoService, never()).save(any());
+    }
+
+    @Test
+    void saveCartaoQuandoNumeroNaoExisteRetornaCreatedEDtoSalvo() {
+        CartaoDTO dto = new CartaoDTO(NUMERO_CARTAO, SENHA);
+        when(cartaoService.findByNumeroCartao(NUMERO_CARTAO)).thenReturn(Optional.empty());
         when(cartaoService.save(dto)).thenReturn(dto);
 
         ResponseEntity<CartaoDTO> response = controller.saveCartao(dto);
@@ -50,19 +64,6 @@ class CartoesControllerTest {
     }
 
     @Test
-    void saveCartaoQuandoCartaoNaoExisteRetornaUnprocessableContent() {
-        CartaoDTO dto = new CartaoDTO(NUMERO_CARTAO, SENHA);
-        when(cartaoService.findByNumeroCartao(NUMERO_CARTAO)).thenReturn(Optional.empty());
-
-        ResponseEntity<CartaoDTO> response = controller.saveCartao(dto);
-
-        assertEquals(HttpStatus.UNPROCESSABLE_CONTENT, response.getStatusCode());
-        assertSame(dto, response.getBody());
-        verify(cartaoService).findByNumeroCartao(NUMERO_CARTAO);
-        verify(cartaoService, never()).save(any());
-    }
-
-    @Test
     void updateCartaoQuandoCartaoExisteRetornaSaldo() {
         Cartao cartao = new Cartao();
         cartao.setSaldo(new BigDecimal("500.0"));
@@ -71,7 +72,7 @@ class CartoesControllerTest {
         ResponseEntity<Object> response = controller.updateCartao(NUMERO_CARTAO);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(500.0, response.getBody());
+        assertEquals(new BigDecimal("500.0"), response.getBody());
         verify(cartaoService).findByNumeroCartao(NUMERO_CARTAO);
     }
 
@@ -82,7 +83,7 @@ class CartoesControllerTest {
         ResponseEntity<Object> response = controller.updateCartao(NUMERO_CARTAO);
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertEquals(null, response.getBody());
+        assertNull(response.getBody());
         verify(cartaoService).findByNumeroCartao(NUMERO_CARTAO);
     }
 }

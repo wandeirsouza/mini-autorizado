@@ -20,7 +20,7 @@ public class CartoesController {
 
     @PostMapping
     public ResponseEntity<CartaoDTO> saveCartao(@RequestBody @Valid CartaoDTO cartaoDTO) {
-        Optional<Cartao> cartao  = cartaoService.findByNumeroCartaoAndSenha(cartaoDTO.numeroCartao(), cartaoDTO.senha());
+        Optional<Cartao> cartao  = cartaoService.findByNumeroCartao(cartaoDTO.numeroCartao());
         return cartao.<ResponseEntity<CartaoDTO>>map(value ->
                         ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).body(cartaoDTO))
                 .orElseGet(() ->  ResponseEntity.status(HttpStatus.CREATED)

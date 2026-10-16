@@ -106,7 +106,7 @@ Os testes unitários usam Mockito para substituir dependências dos controllers 
 
 ## Observações conhecidas
 
-- `CartoesControllerTest` não está alinhado com a implementação atual: os testes configuram `findByNumeroCartao`, mas o controller consulta `findByNumeroCartaoAndSenha`. Além disso, o caso de cartão existente espera HTTP 201 e chamada a `save`, enquanto o controller retorna HTTP 422 nesse ramo. Corrija o stub e confirme a regra esperada para cadastro duplicado antes de considerar essa cobertura confiável.
+- `CartoesControllerTest` cobre criação com número novo, rejeição de número já cadastrado e consulta de saldo. Esses testes usam Mockito e não precisam conectar ao MySQL.
 - `ddl-auto: create` recria as tabelas na inicialização. Para ambientes que precisam preservar dados, use migrações de banco e uma estratégia como `validate`.
 - A autenticação usa um usuário em memória de demonstração. O PIN do cartão é armazenado com BCrypt, mas credenciais fixas de autenticação não são adequadas para produção.
 - O auditing JPA do Spring Data está habilitado na aplicação e nas entidades `Cartao` e `Transacao`, permitindo preencher `createdAt` com `@CreatedDate`.

@@ -47,8 +47,4 @@ public class CartaoService {
         return cartaoRepository.findByNumeroCartao(numeroCartao);
     }
 
-    public Optional<Cartao> findByNumeroCartaoAndSenha(String numeroCartao, String senha){
-        return cartaoRepository.findByNumeroCartaoAndSenha(numeroCartao, bCryptPasswordEncoder.encode(senha));
-    }
-
 }

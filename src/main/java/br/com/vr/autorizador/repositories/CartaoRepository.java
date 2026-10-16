@@ -13,6 +13,4 @@ import java.util.UUID;
 public interface CartaoRepository extends JpaRepository<Cartao, UUID> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<Cartao> findByNumeroCartao(String numeroCartao);
-
-    Optional<Cartao> findByNumeroCartaoAndSenha(String numeroCartao, String senha);
 }
