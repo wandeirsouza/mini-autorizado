@@ -30,7 +30,7 @@ public class TransacaoService {
     @Transactional
     public TransacaoDTO save(TransacaoDTO transacaoDTO) {
         Optional.ofNullable(transacaoDTO.valor())
-                .filter(valor -> valor > 0)
+                .filter(valor -> valor.doubleValue() > 0)
                 .orElseThrow(() -> new TransacaoNegadaException("VALOR_INVALIDO"));
 
         Cartao cartaoRetornado = cartaoRepository.findByNumeroCartao(transacaoDTO.numeroCartao())
@@ -41,10 +41,10 @@ public class TransacaoService {
                 .orElseThrow(() -> new TransacaoNegadaException("SENHA_INVALIDA"));
 
         Optional.of(cartaoRetornado)
-                .filter(cartao -> cartao.getSaldo() >= transacaoDTO.valor())
+                .filter(cartao -> cartao.getSaldo().doubleValue() >= transacaoDTO.valor().doubleValue())
                 .orElseThrow(() -> new TransacaoNegadaException("SALDO_INSUFICIENTE"));
 
-        cartaoRetornado.setSaldo(cartaoRetornado.getSaldo() - transacaoDTO.valor());
+        cartaoRetornado.setSaldo(cartaoRetornado.getSaldo().subtract(transacaoDTO.valor()));
         cartaoRepository.save(cartaoRetornado);
         var transacao = new Transacao();
         transacao.setNumeroCartao(transacaoDTO.numeroCartao());

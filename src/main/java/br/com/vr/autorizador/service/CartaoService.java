@@ -9,6 +9,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -26,7 +27,7 @@ public class CartaoService {
 
     public CartaoDTO save(CartaoDTO cartaoDTO) {
         var cartao = new Cartao();
-        cartao.setSaldo(500.0);
+        cartao.setSaldo(BigDecimal.valueOf(500.0));
         BeanUtils.copyProperties(cartaoDTO, cartao);
         cartao.setSenha(bCryptPasswordEncoder.encode(cartaoDTO.senha()));
         cartaoRepository.save(cartao);

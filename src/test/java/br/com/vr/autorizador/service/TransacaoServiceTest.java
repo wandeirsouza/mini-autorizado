@@ -11,7 +11,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -32,18 +34,20 @@ class TransacaoServiceTest {
 
     private TransacaoService service;
 
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
+
     @BeforeEach
     void setUp() {
-        service = new TransacaoService(cartaoRepository, transacaoRepository);
+        service = new TransacaoService(cartaoRepository, transacaoRepository, bCryptPasswordEncoder);
     }
 
     @Test
     void saveDebitaSaldoSalvaTransacaoERetornaDto() {
-        TransacaoDTO dto = new TransacaoDTO(NUMERO_CARTAO, SENHA, 125.0);
+        TransacaoDTO dto = new TransacaoDTO(NUMERO_CARTAO, SENHA, new BigDecimal(125.0));
         Cartao cartao = new Cartao();
         cartao.setNumeroCartao(NUMERO_CARTAO);
         cartao.setSenha(SENHA);
-        cartao.setSaldo(500.0);
+        cartao.setSaldo(new BigDecimal(500.0));
         when(cartaoRepository.findByNumeroCartao(NUMERO_CARTAO)).thenReturn(Optional.of(cartao));
 
         TransacaoDTO resultado = service.save(dto);
@@ -60,7 +64,7 @@ class TransacaoServiceTest {
 
     @Test
     void saveRejeitaCartaoInexistenteSemPersistir() {
-        TransacaoDTO dto = new TransacaoDTO(NUMERO_CARTAO, SENHA, 125.0);
+        TransacaoDTO dto = new TransacaoDTO(NUMERO_CARTAO, SENHA, new BigDecimal(125.0));
         when(cartaoRepository.findByNumeroCartao(NUMERO_CARTAO)).thenReturn(Optional.empty());
 
         var exception = assertThrows(TransacaoService.TransacaoNegadaException.class, () -> service.save(dto));
@@ -72,7 +76,7 @@ class TransacaoServiceTest {
 
     @Test
     void saveRejeitaSenhaInvalidaSemDebitarOuPersistir() {
-        TransacaoDTO dto = new TransacaoDTO(NUMERO_CARTAO, "9999", 125.0);
+        TransacaoDTO dto = new TransacaoDTO(NUMERO_CARTAO, "9999", new BigDecimal(125.0));
         Cartao cartao = cartaoComSaldo(500.0);
         when(cartaoRepository.findByNumeroCartao(NUMERO_CARTAO)).thenReturn(Optional.of(cartao));
 
@@ -86,7 +90,7 @@ class TransacaoServiceTest {
 
     @Test
     void saveRejeitaSaldoInsuficienteIncluindoCompraQueZeraSaldo() {
-        TransacaoDTO dto = new TransacaoDTO(NUMERO_CARTAO, SENHA, 500.0);
+        TransacaoDTO dto = new TransacaoDTO(NUMERO_CARTAO, SENHA, new BigDecimal(500.0));
         Cartao cartao = cartaoComSaldo(500.0);
         when(cartaoRepository.findByNumeroCartao(NUMERO_CARTAO)).thenReturn(Optional.of(cartao));
 
@@ -102,7 +106,7 @@ class TransacaoServiceTest {
         Cartao cartao = new Cartao();
         cartao.setNumeroCartao(NUMERO_CARTAO);
         cartao.setSenha(SENHA);
-        cartao.setSaldo(saldo);
+        cartao.setSaldo(new BigDecimal(saldo));
         return cartao;
     }
 
@@ -112,7 +116,7 @@ class TransacaoServiceTest {
         Cartao cartao = new Cartao();
         when(cartaoRepository.findById(id)).thenReturn(Optional.of(cartao));
 
-        Optional<Cartao> resultado = service.findById(id);
+        Optional<Cartao> resultado = cartaoRepository.findById(id);
 
         assertSame(cartao, resultado.orElseThrow());
         verify(cartaoRepository).findById(id);

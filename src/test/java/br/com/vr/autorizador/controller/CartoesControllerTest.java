@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -64,7 +65,7 @@ class CartoesControllerTest {
     @Test
     void updateCartaoQuandoCartaoExisteRetornaSaldo() {
         Cartao cartao = new Cartao();
-        cartao.setSaldo(500.0);
+        cartao.setSaldo(new BigDecimal("500.0"));
         when(cartaoService.findByNumeroCartao(NUMERO_CARTAO)).thenReturn(Optional.of(cartao));
 
         ResponseEntity<Object> response = controller.updateCartao(NUMERO_CARTAO);

@@ -7,6 +7,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.UUID;
 
@@ -27,7 +28,7 @@ public class Transacao implements Serializable {
     private String numeroCartao;
 
     @Column(nullable = false)
-    private Double valor;
+    private BigDecimal valor;
 
     @CreatedDate
     @Column(name = "created_at")

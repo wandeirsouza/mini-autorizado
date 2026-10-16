@@ -8,6 +8,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.UUID;
 
@@ -31,7 +32,7 @@ public class Cartao implements Serializable {
     private String senha;
 
     @Column(nullable = false)
-    private Double saldo;
+    private BigDecimal saldo;
 
     @CreatedDate
     @Column(name = "created_at")
