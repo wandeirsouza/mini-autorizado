@@ -38,33 +38,34 @@ class TransacaoServiceTest {
 
     @BeforeEach
     void setUp() {
+        bCryptPasswordEncoder = new BCryptPasswordEncoder();
         service = new TransacaoService(cartaoRepository, transacaoRepository, bCryptPasswordEncoder);
     }
 
     @Test
     void saveDebitaSaldoSalvaTransacaoERetornaDto() {
-        TransacaoDTO dto = new TransacaoDTO(NUMERO_CARTAO, SENHA, new BigDecimal(125.0));
+        TransacaoDTO dto = new TransacaoDTO(NUMERO_CARTAO, SENHA, BigDecimal.valueOf(125.0));
         Cartao cartao = new Cartao();
         cartao.setNumeroCartao(NUMERO_CARTAO);
-        cartao.setSenha(SENHA);
-        cartao.setSaldo(new BigDecimal(500.0));
+        cartao.setSenha(bCryptPasswordEncoder.encode(SENHA));
+        cartao.setSaldo(BigDecimal.valueOf(500.0));
         when(cartaoRepository.findByNumeroCartao(NUMERO_CARTAO)).thenReturn(Optional.of(cartao));
 
         TransacaoDTO resultado = service.save(dto);
 
         assertSame(dto, resultado);
-        assertEquals(375.0, cartao.getSaldo());
+        assertEquals(BigDecimal.valueOf(375.0), cartao.getSaldo());
         verify(cartaoRepository).save(cartao);
 
         ArgumentCaptor<Transacao> transacaoCaptor = ArgumentCaptor.forClass(Transacao.class);
         verify(transacaoRepository).save(transacaoCaptor.capture());
-        assertEquals(NUMERO_CARTAO, transacaoCaptor.getValue().getNumeroCartao());
-        assertEquals(125.0, transacaoCaptor.getValue().getValor());
+        assertSame(cartao, transacaoCaptor.getValue().getCartao());
+        assertEquals(BigDecimal.valueOf(125.0), transacaoCaptor.getValue().getValor());
     }
 
     @Test
     void saveRejeitaCartaoInexistenteSemPersistir() {
-        TransacaoDTO dto = new TransacaoDTO(NUMERO_CARTAO, SENHA, new BigDecimal(125.0));
+        TransacaoDTO dto = new TransacaoDTO(NUMERO_CARTAO, SENHA, BigDecimal.valueOf(125.0));
         when(cartaoRepository.findByNumeroCartao(NUMERO_CARTAO)).thenReturn(Optional.empty());
 
         var exception = assertThrows(TransacaoService.TransacaoNegadaException.class, () -> service.save(dto));
@@ -76,28 +77,28 @@ class TransacaoServiceTest {
 
     @Test
     void saveRejeitaSenhaInvalidaSemDebitarOuPersistir() {
-        TransacaoDTO dto = new TransacaoDTO(NUMERO_CARTAO, "9999", new BigDecimal(125.0));
+        TransacaoDTO dto = new TransacaoDTO(NUMERO_CARTAO, "9999", BigDecimal.valueOf(125.0));
         Cartao cartao = cartaoComSaldo(500.0);
         when(cartaoRepository.findByNumeroCartao(NUMERO_CARTAO)).thenReturn(Optional.of(cartao));
 
         var exception = assertThrows(TransacaoService.TransacaoNegadaException.class, () -> service.save(dto));
 
         assertEquals("SENHA_INVALIDA", exception.getCodigo());
-        assertEquals(500.0, cartao.getSaldo());
+        assertEquals(BigDecimal.valueOf(500.0), cartao.getSaldo());
         verify(cartaoRepository, never()).save(any());
         verifyNoInteractions(transacaoRepository);
     }
 
     @Test
     void saveRejeitaSaldoInsuficienteIncluindoCompraQueZeraSaldo() {
-        TransacaoDTO dto = new TransacaoDTO(NUMERO_CARTAO, SENHA, new BigDecimal(500.0));
+        TransacaoDTO dto = new TransacaoDTO(NUMERO_CARTAO, SENHA, BigDecimal.valueOf(500.0));
         Cartao cartao = cartaoComSaldo(500.0);
         when(cartaoRepository.findByNumeroCartao(NUMERO_CARTAO)).thenReturn(Optional.of(cartao));
 
         var exception = assertThrows(TransacaoService.TransacaoNegadaException.class, () -> service.save(dto));
 
         assertEquals("SALDO_INSUFICIENTE", exception.getCodigo());
-        assertEquals(500.0, cartao.getSaldo());
+        assertEquals(BigDecimal.valueOf(500.0), cartao.getSaldo());
         verify(cartaoRepository, never()).save(any());
         verifyNoInteractions(transacaoRepository);
     }
@@ -105,21 +106,21 @@ class TransacaoServiceTest {
     private Cartao cartaoComSaldo(double saldo) {
         Cartao cartao = new Cartao();
         cartao.setNumeroCartao(NUMERO_CARTAO);
-        cartao.setSenha(SENHA);
-        cartao.setSaldo(new BigDecimal(saldo));
+        cartao.setSenha(bCryptPasswordEncoder.encode(SENHA));
+        cartao.setSaldo(BigDecimal.valueOf(saldo));
         return cartao;
     }
 
     @Test
     void findByIdDelegaAoRepositorio() {
         UUID id = UUID.randomUUID();
-        Cartao cartao = new Cartao();
-        when(cartaoRepository.findById(id)).thenReturn(Optional.of(cartao));
+        Transacao transacao = new Transacao();
+        when(transacaoRepository.findById(id)).thenReturn(Optional.of(transacao));
 
-        Optional<Cartao> resultado = cartaoRepository.findById(id);
+        Optional<Transacao> resultado = service.findById(id);
 
-        assertSame(cartao, resultado.orElseThrow());
-        verify(cartaoRepository).findById(id);
+        assertSame(transacao, resultado.orElseThrow());
+        verify(transacaoRepository).findById(id);
     }
 
     @Test

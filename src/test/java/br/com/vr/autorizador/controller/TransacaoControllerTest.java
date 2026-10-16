@@ -10,6 +10,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.math.BigDecimal;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.*;
@@ -32,7 +34,7 @@ class TransacaoControllerTest {
 
     @Test
     void incluirTransacaoComCartaoESenhaESaldoValidosRetornaCreated() {
-        TransacaoDTO dto = new TransacaoDTO(NUMERO_CARTAO, SENHA, 125.0);
+        TransacaoDTO dto = new TransacaoDTO(NUMERO_CARTAO, SENHA, BigDecimal.valueOf(125.0));
         when(transacaoService.save(dto)).thenReturn(dto);
 
         ResponseEntity<Object> response = controller.incluirTransacao(dto);
@@ -44,7 +46,7 @@ class TransacaoControllerTest {
 
     @Test
     void incluirTransacaoComCartaoInexistenteRetornaErroCorrespondente() {
-        TransacaoDTO dto = new TransacaoDTO(NUMERO_CARTAO, SENHA, 125.0);
+        TransacaoDTO dto = new TransacaoDTO(NUMERO_CARTAO, SENHA, BigDecimal.valueOf(125.0));
         when(transacaoService.save(dto)).thenThrow(new TransacaoService.TransacaoNegadaException("CARTAO_INEXISTENTE"));
 
         ResponseEntity<Object> response = controller.incluirTransacao(dto);
@@ -56,7 +58,7 @@ class TransacaoControllerTest {
 
     @Test
     void incluirTransacaoComSenhaInvalidaRetornaErroCorrespondente() {
-        TransacaoDTO dto = new TransacaoDTO(NUMERO_CARTAO, "9999", 125.0);
+        TransacaoDTO dto = new TransacaoDTO(NUMERO_CARTAO, "9999", BigDecimal.valueOf(125.0));
         when(transacaoService.save(dto)).thenThrow(new TransacaoService.TransacaoNegadaException("SENHA_INVALIDA"));
 
         ResponseEntity<Object> response = controller.incluirTransacao(dto);
@@ -68,7 +70,7 @@ class TransacaoControllerTest {
 
     @Test
     void incluirTransacaoComSaldoInsuficienteRetornaErroCorrespondente() {
-        TransacaoDTO dto = new TransacaoDTO(NUMERO_CARTAO, SENHA, 500.0);
+        TransacaoDTO dto = new TransacaoDTO(NUMERO_CARTAO, SENHA, BigDecimal.valueOf(500.0));
         when(transacaoService.save(dto)).thenThrow(new TransacaoService.TransacaoNegadaException("SALDO_INSUFICIENTE"));
 
         ResponseEntity<Object> response = controller.incluirTransacao(dto);

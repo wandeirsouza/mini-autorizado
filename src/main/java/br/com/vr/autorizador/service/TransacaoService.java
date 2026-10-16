@@ -47,7 +47,7 @@ public class TransacaoService {
         cartaoRetornado.setSaldo(cartaoRetornado.getSaldo().subtract(transacaoDTO.valor()));
         cartaoRepository.save(cartaoRetornado);
         var transacao = new Transacao();
-        transacao.setNumeroCartao(transacaoDTO.numeroCartao());
+        transacao.setCartao(cartaoRetornado);
         transacao.setValor(transacaoDTO.valor());
         transacaoRepository.save(transacao);
         return transacaoDTO;

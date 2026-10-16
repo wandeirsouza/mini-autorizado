@@ -5,11 +5,12 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity()
@@ -37,4 +38,7 @@ public class Cartao implements Serializable {
     @CreatedDate
     @Column(name = "created_at")
     private Date createdAt;
+
+    @OneToMany(mappedBy = "cartao")
+    private List<Transacao> transacoes = new ArrayList<>();
 }

@@ -24,8 +24,9 @@ public class Transacao implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @Column(nullable = false, length = 16)
-    private String numeroCartao;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "cartao_id", nullable = false)
+    private Cartao cartao;
 
     @Column(nullable = false)
     private BigDecimal valor;
